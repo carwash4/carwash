@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>تقرير المبنى — v37</title>
+<style>
+  :root{--ink:#0f172a;--border:#374151;}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:#eef2f7;color:var(--ink);font-family:system-ui,-apple-system,"Noto Naskh Arabic",Tahoma}
+  .toolbar{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:99;background:#fff;padding:10px;border-radius:10px;
+           box-shadow:0 6px 20px rgba(0,0,0,.08);display:flex;gap:8px}
+  .btn{border:1px solid #cbd5e1;background:#2563eb;color:#fff;border-radius:10px;padding:8px 14px;cursor:pointer}
+  #printRoot{display:grid;place-items:center;padding:24px}
+  .page{position:relative;width:210mm;height:297mm;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;
+      -webkit-print-color-adjust:exact; print-color-adjust:exact}
+  .safe{position:absolute;inset:40mm 12mm 16mm 12mm; display:flex; flex-direction:column; gap:8mm}
+  .infoTable{width:100%;border-collapse:collapse;border:1px solid var(--border);background:#fff}
+  .infoTable td{border:1px solid var(--border);padding:6px 8px;font-weight:700}
+  .label{color:#1f2937;opacity:.85}
+  .content{display:flex;flex-direction:column;gap:6mm;min-height:0}
+  h3{margin:0 0 4mm}
+  table{width:100%;border-collapse:collapse;border:1px solid var(--border);background:#fff}
+  th,td{border:1px solid var(--border);padding:3px 5px;font-size:11px}
+  thead th{background:#f3f4f6}
+  .c{text-align:center}
+  .sum{color:#dc2626;font-weight:800}
+  .section{break-inside:avoid}
+  @page{size:A4;margin:0}
+  @media print{body{background:#fff}.toolbar{display:none}.page{box-shadow:none}}
+
+/* Multipage helpers */
+.page{ break-after: page }
+.page:last-child{ break-after: auto }
+.safe .spacer{ height:0 } /* will be set inline by JS */
+/* Ensure images don't taint export if blocked: */
+.bg{ image-rendering:auto }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#f7f9fb;
+  --fg:#0f172a;
+  --muted:#6b7280;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --accent:#2563eb;
+  --accent-2:#1d4ed8;
+  --success:#16a34a;
+  --danger:#ef4444;
+  --warning:#f59e0b;
+  --kpi-bg:#f8fafc;
+  --chip:#eef2ff;
+}
+
+html,body{background:linear-gradient(180deg,#fbfcfe 0%,#f2f5f9 100%);}
+body{
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-family: "Tajawal","Noto Naskh Arabic", system-ui, -apple-system, "Segoe UI", Roboto, "Tahoma", sans-serif;
+  color:var(--fg);
+}
+
+/* Header */
+header{
+  position: sticky; top:0; z-index:50;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(8px);
+  border-bottom:1px solid var(--border);
+}
+.brand span{letter-spacing:.2px}
+
+/* Buttons */
+.btn{ 
+  border:1px solid var(--border);
+  background:var(--card);
+  border-radius:12px;
+  padding:10px 14px;
+  cursor:pointer;
+  transition: all .15s ease;
+}
+.btn:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.btn:active{transform:translateY(0)}
+.btn.primary{ background:var(--accent); color:#fff; border-color:var(--accent) }
+.btn.primary:hover{ background:var(--accent-2); border-color:var(--accent-2) }
+.btn.danger{ background:var(--danger); color:#fff; border-color:var(--danger) }
+.btn.icon{ display:inline-flex; align-items:center; gap:8px }
+
+/* Cards */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.card-h{ padding:12px 14px; border-bottom:1px solid var(--border) }
+.card-c{ padding:12px 14px }
+
+/* KPI tiles */
+.stat{
+  background:var(--kpi-bg);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px 14px;
+  display:flex; align-items:center; gap:10px;
+}
+.stat i{ font-style:normal; font-size:18px; opacity:.8 }
+
+/* Icon cards (buildings) */
+.icon-card{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  background:var(--card);
+  transition:transform .12s ease, box-shadow .18s ease;
+}
+.icon-card:hover{ transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,.07) }
+.circle{ width:54px;height:54px;border-radius:50%;display:grid;place-items:center;
+  background:#e0e7ff;border:1px solid #c7d2fe;font-size:22px }
+
+/* Chips & filters */
+.filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+.chip{
+  border:1px solid var(--border); padding:6px 12px; border-radius:999px; cursor:pointer;
+  background:#fff; transition:all .15s;
+}
+.chip:hover{ background:#f3f4f6 }
+.chip.active{ background:var(--chip); border-color:#c7d2fe }
+
+/* Inputs */
+input,select,textarea{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 12px;
+  transition:border-color .15s, box-shadow .15s;
+  background:#fff;
+}
+input:focus,select:focus,textarea:focus{ outline:none; border-color:#93c5fd; box-shadow:0 0 0 3px rgba(59,130,246,.15) }
+label{ color:#374151; font-size:12px; margin-bottom:6px; display:block }
+
+/* Tables */
+table{ width:100%; border-collapse:collapse; border:1px solid var(--border); background:#fff }
+th,td{ border:1px solid var(--border); padding:8px 10px }
+thead{ background:#f8fafc }
+tbody tr:nth-child(odd){ background:#fcfdff }
+tbody tr:hover{ background:#f6faff }
+
+/* Modals */
+.modal-wrap .modal{ border-radius:18px }
+.modal .head{ padding:14px; border-bottom:1px solid var(--border) }
+.modal .body{ padding:14px }
+
+/* Grids */
+.grid{ display:grid; gap:12px }
+@media(min-width:960px){ .grid.cols-3{ grid-template-columns:repeat(3,1fr) } }
+@media(min-width:640px){ .grid.cols-2{ grid-template-columns:repeat(2,1fr) } }
+
+/* Badges */
+.badge{ font-size:12px; border-radius:999px; padding:4px 8px; display:inline-block }
+.badge.success{ background:#dcfce7; color:#166534 }
+.badge.gray{ background:#f3f4f6; color:#374151 }
+
+/* Helpers */
+.muted{ color:var(--muted) }
+.kv{ display:flex; flex-wrap:wrap; gap:12px }
+.container{ max-width:1200px; margin:0 auto; padding:14px }
+.ymbar{ display:flex; gap:10px; align-items:center; margin-bottom:8px }
+.hidden{ display:none !important }
+
+/* Report: print-friendly */
+@page{ size: A4; margin: 14mm }
+@media print{
+  header, .toolbar, .filters, .modal-wrap{ display:none !important }
+  .card, .stat{ box-shadow:none }
+  thead{ background:#fff !important }
+  a[href]:after{ content:'' !important }
+  .page-break{ page-break-before:always }
+}
+
+
+/* Multipage helpers */
+.page{ break-after: page }
+.page:last-child{ break-after: auto }
+.safe .spacer{ height:0 } /* will be set inline by JS */
+/* Ensure images don't taint export if blocked: */
+.bg{ image-rendering:auto }
+</style>
+<style>
+
+/* Decorative report header */
+.report-header{
+  display:flex; flex-direction:column; gap:8px;
+  border:1px solid var(--border); border-radius:16px;
+  background:linear-gradient(135deg, #eef4ff 0%, #f7fbff 100%);
+  padding:16px;
+  margin-bottom:12px;
+}
+.report-header .row{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+}
+.report-header .title{
+  font-weight:700; font-size:20px;
+}
+.report-header .meta{ color:var(--muted); font-size:13px; display:flex; gap:14px; flex-wrap:wrap }
+.report-section{ margin-top:12px }
+h3.section-title{ margin:8px 0; font-size:16px }
+.zebra tbody tr:nth-child(odd){ background:#fbfdff }
+.zebra tbody tr:hover{ background:#f6faff }
+
+/* Avoid table header repetition issues on print */
+@media print{
+  .report-header{ background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact }
+  table{ page-break-inside:auto }
+  tr{ page-break-inside:avoid; page-break-after:auto }
+  thead{ display:table-header-group }
+  tfoot{ display:table-footer-group }
+}
+
+
+/* Multipage helpers */
+.page{ break-after: page }
+.page:last-child{ break-after: auto }
+.safe .spacer{ height:0 } /* will be set inline by JS */
+/* Ensure images don't taint export if blocked: */
+.bg{ image-rendering:auto }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button class="btn" id="btnPDF">تصدير PDF</button>
+</div>
+
+<div id="printRoot">
+  <div class="page">
+    <img class="bg" id="bg" alt="" crossorigin="anonymous">
+    <div class="safe">
+      <!-- جدول معلومات المبنى (فوق الشقق مباشرة) -->
+      <table class="infoTable" id="topInfo">
+        <tr>
+          <td style="width:28%"><span class="label">اسم المبنى:</span> <span id="infoBuilding">—</span></td>
+          <td style="width:14%"><span class="label">السنة:</span> <span id="infoYear">—</span></td>
+          <td style="width:14%"><span class="label">الشهر:</span> <span id="infoMonth">—</span></td>
+          <td style="width:22%"><span class="label">الموقع:</span> <span id="infoLoc">—</span></td>
+          <td style="width:22%"><span class="label">رقم التواصل:</span> <span id="infoPhone">—</span></td>
+        </tr>
+      </table>
+
+      <div class="content" id="content"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<script>
+  const ORN_BG = "https://i.ibb.co/W4jvtDdH/img-1759573008406.png"; // خلفية مع الزخارف والشعار الكبير
+  document.getElementById('bg').src = ORN_BG;
+
+  // قراءة الحمولة
+  let payload = { buildingName:"—", year:new Date().getFullYear(), month:new Date().getMonth()+1,
+                  apartments:[], shops:[], expenses:[], header:{contact:"",location:""} };
+  try{
+    const raw = localStorage.getItem("pm_report_payload");
+    if(raw) payload = Object.assign(payload, JSON.parse(raw));
+  }catch{}
+
+  const yyyy = +payload.year, mm = String(payload.month).padStart(2,"0");
+  const fmt  = d => d ? new Date(d).toISOString().slice(0,10) : "";
+
+  // تعبئة جدول المعلومات
+  document.getElementById('infoBuilding').textContent = payload.buildingName || "—";
+  document.getElementById('infoYear').textContent     = yyyy;
+  document.getElementById('infoMonth').textContent    = mm;
+  document.getElementById('infoLoc').textContent      = (payload.header?.location||"—");
+  document.getElementById('infoPhone').textContent    = (payload.header?.contact||"—");
+
+  // المجاميع
+  const totalApt   = payload.apartments.reduce((s,t)=>s+Number(t.rent||0),0);
+  const totalShop  = payload.shops.reduce((s,t)=>s+Number(t.rent||0),0);
+  const billsTotal = payload.expenses.reduce((s,e)=>s+Number(e.amount||0),0);
+  const grand      = totalApt + totalShop;
+  const mgmt       = +(grand * 0.15).toFixed(2);
+  const afterAll   = +(grand - mgmt - billsTotal).toFixed(2);
+
+  const rowTenant = (t,i)=> `<tr>
+      <td class="c">${i+1}</td>
+      <td class="c">${t.unitNumber||""}</td>
+      <td>${t.tenantName||""}</td>
+      <td class="c">${Number(t.rent||0).toFixed(2)}</td>
+      <td class="c">${fmt(t.startDate)}</td>
+      <td class="c">${fmt(t.endDate)}</td>
+      <td class="c">${t.phone||""}</td>
+      <td>${t.notes||""}</td>
+    </tr>`;
+
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="section">
+      <h3>الشقق</h3>
+      <table>
+        <thead>
+          <tr><th>#</th><th>شقة رقم</th><th>اسم المستأجر</th><th>الإيجار</th><th>بداية العقد</th><th>نهاية العقد</th><th>رقم التواصل</th><th>ملاحظة</th></tr>
+        </thead>
+        <tbody>
+          ${ payload.apartments.length ? payload.apartments.map(rowTenant).join("") : `<tr><td class="c" colspan="8">لا توجد بيانات</td></tr>` }
+        </tbody>
+        <tfoot><tr><td colspan="3" class="c">المجموع</td><td class="c sum">${totalApt.toFixed(2)}</td><td colspan="4"></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="section">
+      <h3>المحلات / المعارض</h3>
+      <table>
+        <thead>
+          <tr><th>#</th><th>رقم المحل/المعرض</th><th>المستأجر</th><th>الإيجار</th><th>بداية العقد</th><th>نهاية العقد</th><th>رقم التواصل</th><th>ملاحظة</th></tr>
+        </thead>
+        <tbody>
+          ${ payload.shops.length ? payload.shops.map(rowTenant).join("") : `<tr><td class="c" colspan="8">لا توجد بيانات</td></tr>` }
+        </tbody>
+        <tfoot><tr><td colspan="3" class="c">المجموع</td><td class="c sum">${totalShop.toFixed(2)}</td><td colspan="4"></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="section">
+      <h3>المصروفات</h3>
+      <table>
+        <thead><tr><th>الخدمة</th><th>قيمة الخدمة</th><th>رقم الفاتورة</th><th>رقم الشقة</th></tr></thead>
+        <tbody>
+          ${ payload.expenses.length ? payload.expenses.map(e=>`
+            <tr><td>${e.type||""}</td><td class="c">${Number(e.amount||0).toFixed(2)}</td><td class="c">${e.billNo||""}</td><td class="c">${e.unitNo||""}</td></tr>
+          `).join("") : `<tr><td class="c" colspan="4">لا توجد مصروفات</td></tr>` }
+        </tbody>
+        <tfoot><tr><td style="text-align:left">المجموع</td><td class="c sum">${billsTotal.toFixed(2)}</td><td colspan="2"></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="section">
+      <h3>الحسابات النهائية</h3>
+      <table>
+        <tbody>
+          <tr><td>مجموع إيجار الشقق</td><td class="c">${totalApt.toFixed(2)}</td></tr>
+          <tr><td>مجموع إيجار المحلات</td><td class="c">${totalShop.toFixed(2)}</td></tr>
+          <tr><td>الإيجار الكلي</td><td class="c">${grand.toFixed(2)}</td></tr>
+          <tr><td>نسبة رسوم الإدارة 15%</td><td class="c">${mgmt.toFixed(2)}</td></tr>
+          <tr><td>الفواتير</td><td class="c">${billsTotal.toFixed(2)}</td></tr>
+          <tr><td><b>مجموع الإيجار بعد خصم الفواتير و رسوم الإدارة</b></td><td class="c sum">${afterAll.toFixed(2)}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  
+// --------- Auto Pagination ---------
+function createEmptyPage(templatePage, infoHeightPx){
+  const page = templatePage.cloneNode(true);
+  const safe = page.querySelector('.safe');
+  const bg   = page.querySelector('#bg');
+  // Avoid duplicate IDs on cloned pages
+  if (bg) bg.id = '';
+  // Remove the top info table and place a spacer with same height
+  const info = safe.querySelector('#topInfo');
+  if (info) info.remove();
+  const spacer = document.createElement('div');
+  spacer.className = 'spacer';
+  spacer.style.height = '0px';
+  safe.insertBefore(spacer, safe.firstChild);
+  // Empty/prepare content container
+  let content = safe.querySelector('#content');
+  if (!content){
+    content = document.createElement('div');
+    content.id = 'content';
+    safe.appendChild(content);
+  } else {
+    content.innerHTML = '';
+  }
+  return page;
+}
+
+function paginateSections(){
+  const root   = document.getElementById('printRoot');
+  const page1  = root.querySelector('.page');
+  const safe1  = page1.querySelector('.safe');
+  const infoH  = safe1.querySelector('#topInfo')?.offsetHeight || 0;
+  const content1 = safe1.querySelector('#content');
+
+  // Available vertical space for content inside .safe
+  const safeHeight = safe1.clientHeight;
+  const maxFirst   = safeHeight - infoH;       // first page has top info occupying space
+  const maxNext    = safeHeight - infoH;       // next pages will get a spacer with same height
+
+  // Nothing to do if fits already
+  if (content1.scrollHeight <= maxFirst) return;
+
+  // Gather all .section blocks
+  const sections = Array.from(content1.children);
+  // Prepare the first page content — we will move items out if they overflow
+  let used = 0;
+  for (let i=0; i<sections.length; i++){
+    const sec = sections[i];
+    const h = sec.offsetHeight;
+    if (used + h <= maxFirst){
+      used += h;
+      continue;
+    }
+    // Need a new page
+    let currentIndex = i;
+    let lastPage = page1;
+    // While there are remaining sections, keep creating pages
+    while (currentIndex < sections.length){
+      const newPage = createEmptyPage(page1, infoH);
+      const newSafe = newPage.querySelector('.safe');
+      const newContent = newSafe.querySelector('#content');
+      root.appendChild(newPage);
+
+      let usedNext = 0;
+      while (currentIndex < sections.length){
+        const node = sections[currentIndex];
+        // Move node to new page and measure
+        newContent.appendChild(node);
+        const h2 = node.offsetHeight;
+        if (usedNext + h2 <= maxNext){
+          usedNext += h2;
+          currentIndex++;
+        }else{
+          // If the section alone is taller than the page, leave it (won't split rows here)
+          // and break to avoid infinite loop
+          if (h2 > maxNext) { currentIndex++; }
+          break;
+        }
+      }
+      lastPage = newPage;
+    }
+    break; // done distributing
+  }
+}
+
+// Run pagination after content is injected
+paginateSections();
+
+// --------- Robust PDF Export ---------
+document.getElementById('btnPDF').onclick = async ()=>{
+  const root = document.getElementById('printRoot');
+  const bgImgs = root.querySelectorAll('.bg');
+  let hidBG = false;
+  // Try to ensure CORS for backgrounds, else temporarily hide them to avoid blank PDF
+  try{
+    const opt = {
+      margin:       0,
+      filename:     `تقرير_${payload.buildingName||"مبنى"}_${yyyy}-${mm}.pdf`,
+      image:        { type:'jpeg', quality:0.98 },
+      html2canvas:  { scale: 2.0, useCORS:true, backgroundColor:'#ffffff', letterRendering:true, scrollY: 0 },
+      pagebreak:    { mode: ['css','legacy'] },
+      jsPDF:        { unit:'mm', format:'a4', orientation:'portrait' }
+    };
+    await window.html2pdf().set(opt).from(root).save();
+  }catch(e){
+    // Fallback: hide .bg then export again
+    hidBG = true;
+    bgImgs.forEach(img=> img.style.display='none');
+    const opt = {
+      margin:       0,
+      filename:     `تقرير_${payload.buildingName||"مبنى"}_${yyyy}-${mm}.pdf`,
+      image:        { type:'jpeg', quality:0.98 },
+      html2canvas:  { scale: 2.0, backgroundColor:'#ffffff', letterRendering:true, scrollY: 0, allowTaint:true },
+      pagebreak:    { mode: ['css','legacy'] },
+      jsPDF:        { unit:'mm', format:'a4', orientation:'portrait' }
+    };
+    await window.html2pdf().set(opt).from(root).save();
+  }finally{
+    if (hidBG){ bgImgs.forEach(img=> img.style.display=''); }
+  }
+};
+
+</script>
+</body>
+</html>
+
+
