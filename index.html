@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -163,7 +162,7 @@
 
       <div id="priceSection" class="inline-actions">
         <p class="price">السعر: <span id="priceValue">0.00</span> ر.ع</p>
-        <button class="btn chip-primary" type="button" id="confirmBtn" disabled>تأكيد الحجز</button>
+        <button class="btn chip-primary" type="button" id="confirmBtn" data-check-hours-trigger data-submit-target="#bookingForm" disabled>تأكيد الحجز</button>
       </div>
       <p class="muted" id="queueHint" style="display:none;margin:6px 2px 0;"></p>
     </form>
@@ -318,7 +317,7 @@ function updatePrice() {
       const carCode   = (document.getElementById('carCode')?.value || '').trim();
       const price = calcPrice(pkg, car);
       const hasLocation = !!document.getElementById('lat').value && !!document.getElementById('lng').value;
-      document.getElementById('confirmBtn').disabled = !(signedIn) ||  (price > 0 && phone && car && carNumber && carCode && hasLocation);
+      document.getElementById('confirmBtn').disabled = !(signedIn && price > 0 && phone && car && carNumber && carCode && hasLocation);
     
 }
 
