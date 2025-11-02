@@ -224,6 +224,27 @@
     const db = firebase.firestore();
 
     
+
+// ---- Auth helpers ----
+async function ensureAuth(){
+  if (!firebase.auth) throw new Error('auth-missing');
+  const auth = firebase.auth();
+  if (auth.currentUser) return auth.currentUser;
+  try{ await auth.signInAnonymously(); }catch(e){ console.warn('signInAnonymously error', e); }
+  return await new Promise((res, rej)=>{
+    const to = setTimeout(()=>rej(new Error('auth-timeout')), 10000);
+    const unsub = auth.onAuthStateChanged(u=>{ if(u){ clearTimeout(to); unsub(); res(u); } });
+  });
+}
+try{
+  const auth = firebase.auth();
+  auth.onAuthStateChanged(u=>{
+    window.currentUID = u ? u.uid : null;
+    console.log('[auth] uid =', window.currentUID);
+    if (typeof toggleConfirmEnabled==='function') toggleConfirmEnabled();
+  });
+  if (!auth.currentUser) auth.signInAnonymously().catch(e=>console.warn('anon auth error', e));
+}catch(e){ console.warn('auth hook error', e); }
 // ---- Auth bootstrap: anonymous sign-in so Firestore rules with request.auth != null pass ----
 try {
   if (firebase.auth) {
@@ -263,6 +284,45 @@ async function ensureAuth(){
       $('#package').on('change', updatePrice);
       $('#carType').on('change', updatePrice);
       updatePrice();
+
+      // --- Prefill from URL params (phone, carType, carNumber, carCode, package, lat, lng)
+      (function prefillFromQuery(){
+        try{
+          const p = new URLSearchParams(location.search);
+          let changed = false;
+          const setVal = (id, val) => {
+            if (val !== null && val !== undefined && String(val).trim() !== '') {
+              const el = document.getElementById(id);
+              if (el) { el.value = String(val).trim(); changed = true; }
+            }
+          };
+          setVal('phone', p.get('phone'));
+          setVal('carType', p.get('carType'));
+          setVal('package', p.get('package'));
+          setVal('carNumber', p.get('carNumber'));
+          const cc = p.get('carCode');
+          if (cc) {
+            const el = document.getElementById('carCode');
+            if (el) { el.value = cc.toUpperCase().replace(/[^A-Z]/g,''); changed = true; }
+          }
+          const lat = p.get('lat'), lng = p.get('lng');
+          if (lat && lng) {
+            const la = (+lat); const ln = (+lng);
+            const la6 = isFinite(la) ? la.toFixed(6) : '';
+            const ln6 = isFinite(ln) ? ln.toFixed(6) : '';
+            if (la6 && ln6) {
+              const latEl = document.getElementById('lat');
+              const lngEl = document.getElementById('lng');
+              const addrEl = document.getElementById('address');
+              if (latEl && lngEl && addrEl) {
+                latEl.value = la6; lngEl.value = ln6; addrEl.value = `${la6}, ${ln6}`; changed = true;
+              }
+            }
+          }
+          if (changed) { updatePrice(); toggleConfirmEnabled(); }
+        }catch(e){ console.warn('prefill error', e); }
+      })();
+
 
       document.getElementById('confirmBtn').addEventListener('click', onConfirmBooking);
       document.getElementById('paymentButton').addEventListener('click', onCompletePayment);
@@ -308,19 +368,20 @@ function updatePrice() {
       toggleConfirmEnabled();
     }
 
-    function toggleConfirmEnabled(){
-      const signedIn = !!(firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid);
-
-      const phone = document.getElementById('phone').value.trim();
-      const pkg   = document.getElementById('package').value;
-      const car   = document.getElementById('carType').value;
-      const carNumber = (document.getElementById('carNumber')?.value || '').trim();
-      const carCode   = (document.getElementById('carCode')?.value || '').trim();
-      const price = calcPrice(pkg, car);
-      const hasLocation = !!document.getElementById('lat').value && !!document.getElementById('lng').value;
-      document.getElementById('confirmBtn').disabled = !(signedIn && price > 0 && phone && car && carNumber && carCode && hasLocation);
     
+function toggleConfirmEnabled(){
+  const phone = document.getElementById('phone').value.trim();
+  const pkg   = document.getElementById('package').value;
+  const car   = document.getElementById('carType').value;
+  const carNumber = (document.getElementById('carNumber')?.value || '').trim();
+  const carCode   = (document.getElementById('carCode')?.value || '').trim();
+  const price = calcPrice(pkg, car);
+  const hasLocation = !!document.getElementById('lat').value && !!document.getElementById('lng').value;
+  const ok = (price > 0 && phone && car && carNumber && carCode && hasLocation);
+  const btn = document.getElementById('confirmBtn');
+  if (btn) btn.disabled = !ok;
 }
+
 
     /* ====== الخريطة ====== */
     function openMapModal() {
@@ -464,7 +525,10 @@ function updatePrice() {
     }
 
     /* ====== الحجز والدفع ====== */
-    async function onConfirmBooking() {
+    async function onConfirmBooking(){
+      // make sure we're authenticated
+      let _u; try{ _u = await ensureAuth(); }catch(e){ alert('تعذّر تسجيل جلسة مجهولة: '+e.message); return; }
+
       const form = document.getElementById('bookingForm');
       if (!form.checkValidity()) { form.reportValidity(); return; }
       if (!document.getElementById('lat').value || !document.getElementById('lng').value) { alert('فضلاً حدّد موقع السيارة من الخريطة.'); return; }
@@ -1417,3 +1481,28 @@ function updatePrice() {
 
 </body>
 </html>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function(){
+  try{ if (typeof updatePrice==='function') updatePrice(); if (typeof toggleConfirmEnabled==='function') toggleConfirmEnabled(); }catch(e){}
+});
+
+</script>
+
+<script>
+
+// ---- Connectivity probe (optional) ----
+async function connectivityProbe(){
+  try{
+    await ensureAuth();
+    const id = 'p'+Date.now();
+    await db.collection('__debug').doc(id).set({ t: Date.now(), ua: navigator.userAgent || '' });
+    console.log('[probe] write ok');
+  }catch(e){
+    console.warn('[probe] failed', e);
+  }
+}
+document.addEventListener('DOMContentLoaded', ()=>{ try{ connectivityProbe(); }catch(_){ } });
+
+</script>
