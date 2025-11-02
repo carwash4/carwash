@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -70,6 +71,7 @@
 
   async function pullOnce(){
     try{
+      await waitAuth;
       const snap = await HOURS_DOC.get();
       const d = snap.exists && snap.data();
       if (d && Array.isArray(d.hours) && d.hours.length === 7) seed(d.hours);
@@ -77,11 +79,13 @@
   }
 
   try{
-    HOURS_DOC.onSnapshot((snap)=>{
+    waitAuth.then(function(){
+      HOURS_DOC.onSnapshot((snap)=>{
       const d = snap.data && snap.data();
       if (snap.exists && d && Array.isArray(d.hours) && d.hours.length === 7){
         seed(d.hours);
       }
+    });
     });
   }catch(e){ console.warn("[viewer-hours] live sub failed:", e); }
 
@@ -188,6 +192,9 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <!-- Optional: App Check, will activate only if a site key is provided -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
@@ -204,7 +211,30 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    /* ====== متغيرات عامة ====== */
+    
+// ---- Auth bootstrap: anonymous sign-in so Firestore rules with request.auth != null pass ----
+try {
+  if (firebase.auth) {
+    firebase.auth().onAuthStateChanged(function(user){
+      if (!user) {
+        firebase.auth().signInAnonymously().catch(function(e){ console.warn('anon auth error', e); });
+      }
+    });
+  }
+} catch(e){ console.warn('auth init error', e); }
+
+// Helper to ensure we are signed in before protected reads/writes
+async function ensureAuth(){
+  try{
+    if (firebase.auth && firebase.auth().currentUser) return firebase.auth().currentUser;
+    if (firebase.auth) {
+      const cred = await firebase.auth().signInAnonymously();
+      return cred.user || null;
+    }
+  }catch(e){ console.warn('ensureAuth fail', e); }
+  return null;
+}
+/* ====== متغيرات عامة ====== */
     let map, marker, lastLatLng = null;
     let currentBookingId = null;
     let unsubscribeBooking = null;
@@ -444,6 +474,7 @@ function updatePrice() {
 
       try {
         // حفظ الحجز أولاً
+        await ensureAuth();
         const docRef = await db.collection('bookings').add(booking);
         currentBookingId = docRef.id;
 
@@ -1149,12 +1180,15 @@ function updatePrice() {
   window.db = window.db || firebase.firestore();
   const HOURS_DOC = db.collection('config').doc('businessHours');
 
+  const waitAuth = (window.ensureAuth ? window.ensureAuth() : Promise.resolve());
+
   // Cloud-only: remove stale local unless we seeded this session
   try{ if(!sessionStorage.getItem("bhCloudSeeded")){ localStorage.removeItem(STORAGE_KEY); } }catch(_){}
   window.__bh_cloud_ready = false;
 
   async function seedFromCloud(){
     try{
+      await waitAuth;
       const snap = await HOURS_DOC.get();
       const d = snap.exists && snap.data();
       if(d && Array.isArray(d.hours) && d.hours.length===7){
@@ -1168,7 +1202,8 @@ function updatePrice() {
   }
 
   try{
-    HOURS_DOC.onSnapshot((snap)=>{
+    waitAuth.then(function(){
+      HOURS_DOC.onSnapshot((snap)=>{
       const d = snap.data && snap.data();
       if(snap.exists && d && Array.isArray(d.hours) && d.hours.length===7){
         localStorage.setItem(STORAGE_KEY, JSON.stringify(d.hours));
@@ -1177,6 +1212,7 @@ function updatePrice() {
         window.dispatchEvent(new CustomEvent("business-hours-updated", { detail: d.hours }));
         console.log("[index-hours] live update");
       }
+    });
     });
   }catch(e){ console.warn("[index-hours] live sub failed:", e); }
 
