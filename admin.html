@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -476,8 +477,8 @@
     if(saveHours(data)){
       closeModal();
       alert("تم حفظ أوقات العمل بنجاح.");
-      window.dispatchEvent(new CustomEvent("business-hours-updated", {detail:data}));
-    }
+      // no dispatch here; avoid triggering push on mere pull
+}
   });
 
   // expose helper
@@ -502,7 +503,10 @@
   try{ localStorage.removeItem(STORAGE_KEY); }catch(_){}
   window.__bh_cloud_ready = false;
 
-  // 3) Seed from cloud on load
+  
+  // Gate cloud push behind explicit user save
+  window.__bh_save_intent = false;
+// 3) Seed from cloud on load
   async function pullFromCloud(){
     try{
       const snap = await HOURS_DOC.get();
@@ -510,21 +514,33 @@
       if(d && Array.isArray(d.hours) && d.hours.length===7){
         localStorage.setItem(STORAGE_KEY, JSON.stringify(d.hours));
         window.__bh_cloud_ready = true;
-        window.dispatchEvent(new CustomEvent("business-hours-updated", { detail: d.hours }));
-        console.log("[admin-hours] pulled from cloud");
+        // no dispatch here; avoid triggering push on mere pull
+console.log("[admin-hours] pulled from cloud");
       }else{
         console.log("[admin-hours] cloud doc missing/malformed");
       }
     }catch(e){ console.warn("[admin-hours] pull error:", e); }
   }
 
-  // 4) Push to cloud when widget saves
-  window.addEventListener("business-hours-updated", async (ev)=>{
-    try{
-      const hours = ev && ev.detail;
-      if(!(Array.isArray(hours) && hours.length===7)) return;
-      await HOURS_DOC.set({ hours, updatedAt: SV.serverTimestamp() }, { merge: true });
-      // after push, re-seed local from the same value to keep UI in sync
+  
+// 4) Push to cloud only after explicit Save
+window.addEventListener("business-hours-updated", async (ev)=>{
+  if (!window.__bh_save_intent) { console.log("[admin-hours] skip push (no explicit save)"); return; }
+  try{
+    const hours = ev && ev.detail;
+    if(!(Array.isArray(hours) && hours.length===7)) return;
+    await HOURS_DOC.set({ hours, updatedAt: SV.serverTimestamp() }, { merge: true });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(hours));
+    window.__bh_cloud_ready = true;
+    console.log("[admin-hours] pushed to cloud");
+  }catch(e){
+    console.warn("[admin-hours] push error:", e);
+    alert("تعذر الحفظ على السحابة.");
+  }finally{
+    window.__bh_save_intent = false;
+  }
+});
+// after push, re-seed local from the same value to keep UI in sync
       localStorage.setItem(STORAGE_KEY, JSON.stringify(hours));
       window.__bh_cloud_ready = true;
       console.log("[admin-hours] pushed to cloud");
