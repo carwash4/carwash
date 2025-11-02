@@ -60,6 +60,18 @@
   const STORAGE_KEY = "businessHoursV1";
   if (!(window.firebase && firebase.firestore)) { console.warn("[viewer-hours] Firebase not found"); return; }
   const db = firebase.firestore();
+  // Auth state hook: reflect UID and re-evaluate controls
+  try{
+    const auth = firebase.auth();
+    auth.onAuthStateChanged(function(u){
+      window.currentUID = u ? u.uid : null;
+      console.log('[auth] uid =', window.currentUID);
+      if (typeof toggleConfirmEnabled === 'function') toggleConfirmEnabled();
+    });
+    // Kick anonymous sign-in if needed
+    if (!auth.currentUser) auth.signInAnonymously().catch(function(e){ console.warn('anon auth error', e); });
+  }catch(e){ console.warn('auth hook error', e); }
+
   const HOURS_DOC = db.collection('config').doc('businessHours');
 
   function seed(hours){
@@ -296,7 +308,9 @@ function updatePrice() {
       toggleConfirmEnabled();
     }
 
-    function toggleConfirmEnabled() {
+    function toggleConfirmEnabled(){
+      const signedIn = !!(firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid);
+
       const phone = document.getElementById('phone').value.trim();
       const pkg   = document.getElementById('package').value;
       const car   = document.getElementById('carType').value;
@@ -304,8 +318,9 @@ function updatePrice() {
       const carCode   = (document.getElementById('carCode')?.value || '').trim();
       const price = calcPrice(pkg, car);
       const hasLocation = !!document.getElementById('lat').value && !!document.getElementById('lng').value;
-      document.getElementById('confirmBtn').disabled = !(price > 0 && phone && car && carNumber && carCode && hasLocation);
-    }
+      document.getElementById('confirmBtn').disabled = !(signedIn) ||  (price > 0 && phone && car && carNumber && carCode && hasLocation);
+    
+}
 
     /* ====== الخريطة ====== */
     function openMapModal() {
@@ -457,7 +472,7 @@ function updatePrice() {
       if (!document.getElementById('carType').value) { alert('فضلاً اختر نوع السيارة.'); return; }
 
       const now = Date.now();
-      const booking = {
+      const booking = { uid: (firebase.auth && firebase.auth().currentUser ? firebase.auth().currentUser.uid : null),
         phone: document.getElementById('phone').value.trim(),
         package: document.getElementById('package').value,
         carType: document.getElementById('carType').value,
