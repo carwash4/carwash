@@ -1,564 +1,602 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lamaa — Admin Panel</title>
-
+  <title>Lamaa — Admin</title>
   <style>
     :root{
-      --bg1:#e6f7ff;
-      --bg2:#f0fffb;
-      --ink:#0f172a;
-      --card:#ffffff;
-      --line:#e5e7eb;
-      --red:#ef4444;
-      --green:#22c55e;
-      --blue:#0ea5e9;
-      --muted:#6b7280;
+      --bg1:#e6f7ff; --bg2:#f0fffb; --ink:#0f1a2b;
+      --card:#ffffff; --line:#e6eef8;
+      --red:#ef4444; --green:#00d2a0; --blue:#0ea5e9;
+      --muted:#5f7aa3;
     }
     *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:'Tajawal',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:linear-gradient(to bottom,var(--bg1),var(--bg2));
-      color:var(--ink);
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 80% -10%, var(--bg1), transparent 60%), linear-gradient(180deg, var(--bg1), var(--bg2));
+      color:var(--ink); margin:0
     }
     header{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 14px;
-    }
-    header img{
-      width:34px;height:34px;border-radius:10px;object-fit:cover;
-    }
-    header h1{margin:0;font-size:18px;font-weight:700;}
-    header small{display:block;font-size:11px;color:var(--muted);}
-
-    .wrap{padding:10px 14px 80px;}
-    #list{display:flex;flex-direction:column;gap:10px;}
-
-    .item{
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:#fff;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .item-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-    }
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:4px;
-      padding:2px 8px;
-      border-radius:999px;
-      font-size:10px;
-      background:#eff6ff;
-      color:#1d4ed8;
-    }
-    .btn{
-      padding:4px 9px;
-      border-radius:999px;
-      border:none;
-      font-size:10px;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:4px;
-    }
-    .btn.blue{background:var(--blue);color:#fff;}
-    .btn.red{background:var(--red);color:#fff;}
-    .btn.green{background:var(--green);color:#fff;}
-    .muted{color:var(--muted);font-size:10px;}
-
-    .fab-bar{
-      position:fixed;
-      bottom:10px;
-      right:0;left:0;
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      pointer-events:none;
-      z-index:9999;
-    }
-    .fab-btn{
-      pointer-events:auto;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:10px 18px;
-      border-radius:999px;
-      border:none;
-      font-size:13px;
-      font-weight:600;
-      cursor:pointer;
-      box-shadow:0 14px 40px rgba(15,23,42,.18);
-    }
-    .fab-work{background:var(--blue);color:#fff;}
-    .fab-report{background:#111827;color:#e5e7eb;}
-    .fab-btn svg{width:16px;height:16px;}
-
-    .wh-backdrop,.rpt-backdrop{
-      position:fixed;inset:0;
-      background:rgba(15,23,42,.30);
-      display:none;
-      z-index:9997;
-    }
-    .wh-modal,.rpt-modal{
-      position:fixed;
-      inset-inline:10px;
-      bottom:80px;
-      margin:auto;
-      max-width:600px;
-      background:#fff;
-      border-radius:18px;
-      padding:14px;
-      box-shadow:0 18px 50px rgba(15,23,42,.25);
-      display:none;
-      z-index:9998;
-    }
-    .modal-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:8px;
-    }
-    .modal-head h3{margin:0;font-size:16px;font-weight:700;}
-    .modal-head small{display:block;font-size:11px;color:var(--muted);}
-    .modal-close{
-      border:none;background:transparent;
-      font-size:20px;cursor:pointer;color:#9ca3af;
-    }
-
-    table{width:100%;border-collapse:collapse;font-size:11px;}
-    th,td{
-      padding:6px;
+      display:flex; align-items:center; gap:12px; padding:10px 14px;
+      background:linear-gradient(135deg, rgba(14,165,233,.12), rgba(0,210,160,.10)), #ffffffaa;
       border-bottom:1px solid var(--line);
-      text-align:right;
-      white-space:nowrap;
+      backdrop-filter:saturate(1.2) blur(2px);
+      position:sticky; top:0; z-index:5;
     }
-    th{background:#f9fafb;font-weight:600;}
+    header img{width:44px;height:44px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,.06)}
+    header h3{margin:0;font-size:1.15rem}
+    header small{color:var(--muted)}
+    .wrap{max-width:980px;margin:12px auto 96px;padding:0 12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 8px 22px rgba(0,0,0,.05);position:relative}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .pill{padding:4px 10px;border-radius:999px;background:#eaf4ff;color:#0b4a7a;font-size:12px;border:1px solid var(--line)}
+    button{border:none;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:800}
+    button.red{background:var(--red);color:#fff}
+    button.green{background:var(--green);color:#003326}
+    button.blue{background:var(--blue);color:#fff}
+    button.ghost{background:#eef6ff;color:#0f3c6e}
+    button:disabled{opacity:.85;filter:saturate(.85);cursor:not-allowed}
+    small{opacity:.85;color:var(--muted)}
+    .empty{opacity:.8;text-align:center;padding:16px}
+    .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .value{font-weight:700}
+    .section-title{margin:10px 0 0;font-size:.95rem;color:#123}
+    .queue-col{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+    .queue-badge{min-width:38px;height:38px;display:grid;place-items:center;background:#ffb020;color:#111;font-weight:900;border-radius:10px;border:1px solid #e09a1c;font-size:18px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+    .queue-time{font-size:12px;color:var(--muted);font-weight:800}
   </style>
-
-  <!-- Firebase compat -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <header>
-  <img src="https://i.ibb.co/NS9TWB8/lamaa-logo.png" alt="Lamaa">
+  <img src="https://i.ibb.co/k2wtWBrW/unnamed.jpg" alt="Lamaa logo">
   <div>
-    <h1>Lamaa — Admin Panel</h1>
-    <small>Notifications enabled ✅</small>
+    <h3>Lamaa — Admin Panel</h3>
+    <small id="permNote">🔔 Enable notifications</small>
   </div>
 </header>
 
-<div class="wrap">
-  <div id="list"></div>
-</div>
+<div class="wrap" id="list"></div>
 
-<!-- نافذة التقارير -->
-<div class="rpt-backdrop" id="rptBackdrop" onclick="toggleReport(false)"></div>
-<div class="rpt-modal" id="rptModal">
-  <div class="modal-head">
-    <div>
-      <h3>التقارير اليومية والشهرية</h3>
-      <small>التقارير تعتمد فقط على الطلبات التي حالتها <b>completed</b>.</small>
+<audio id="ding" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+  // Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_kRUAmKIFQwWK0Xrr8PeebnQbWGauu34",
+    authDomain: "wash-a7ef9.firebaseapp.com",
+    projectId: "wash-a7ef9",
+    storageBucket: "wash-a7ef9.firebasestorage.app",
+    messagingSenderId: "244309029995",
+    appId: "1:244309029995:web:b5cb0534edce26aac3ed2e"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  
+// ---- auth helpers ----
+async function ensureAuth(){
+  const auth = firebase.auth();
+  if (auth.currentUser) return auth.currentUser;
+  try{ await auth.signInAnonymously(); }catch(e){ console.warn('[admin] anon sign-in error', e); }
+  return await new Promise((res, rej)=>{
+    const to = setTimeout(()=>rej(new Error('auth-timeout')), 10000);
+    const unsub = firebase.auth().onAuthStateChanged(u=>{ if(u){ clearTimeout(to); unsub(); res(u); } });
+  });
+}
+try{
+  if (!firebase.auth().currentUser) firebase.auth().signInAnonymously().catch(console.warn);
+  firebase.auth().onAuthStateChanged(u=>console.log('[admin] uid =', u && u.uid));
+}catch(e){ console.warn('[admin] auth hook error', e); }
+// Desktop notifications (optional)
+  if ('Notification' in window) {
+    Notification.requestPermission().then(p=>{
+      document.getElementById('permNote').textContent =
+        (p==='granted' ? 'Notifications enabled ✅' : '🔔 Enable notifications from your browser');
+    });
+  }
+
+  const list = document.getElementById('list');
+  const ding  = document.getElementById('ding');
+
+  // State
+  const ACTIVE_STATUSES = ['pending','accepted','confirmed']; // queue
+  const live = new Map(); // id -> data
+
+  function renderFromLive(){
+    const arr = Array.from(live.values())
+      .sort((a,b)=> (a.createdAtMs||0) - (b.createdAtMs||0)); // oldest first
+    render(arr);
+  }
+
+  // Quick read test
+  db.collection('bookings').limit(1).get()
+    .then(()=>console.log('[admin] read test OK'))
+    .catch(err=>{
+      console.error('[admin] read test failed:', err);
+      list.innerHTML = `
+        <div class="card" style="border-color:#ffb4b4">
+          Failed to read bookings from Firestore (rules may block reads).<br>
+          <small>Open Console for details.</small>
+        </div>`;
+    });
+
+  // Live listener (order; filter client-side to avoid composite index)
+  let unsub = db.collection('bookings')
+    .orderBy('createdAtMs')
+    .onSnapshot(
+      snap=>{
+        const docs = [];
+        snap.forEach(d=> docs.push({ id:d.id, ...d.data() }));
+        const actives = docs.filter(x => ACTIVE_STATUSES.includes(x.status));
+        live.clear();
+        actives.forEach(x => live.set(x.id, x));
+        renderFromLive();
+      },
+      err=>{
+        console.error('[admin] onSnapshot error:', err);
+        list.innerHTML = `
+          <div class="card" style="border-color:#ffb4b4">
+            Realtime updates failed: ${err.message || err}
+          </div>`;
+      }
+    );
+
+  // Helpers
+  function money(n){ return (+(n||0)).toFixed(2) + ' OMR'; }
+  function washLabel(s){
+    return s==='both' ? 'Exterior + Interior' :
+           s==='external' ? 'Exterior only' : '—';
+  }
+  function statusLabel(s){
+    return s==='pending'   ? 'Pending' :
+           s==='accepted'  ? 'Accepted' :
+           s==='confirmed' ? 'Paid/Confirmed' :
+           s==='completed' ? 'Completed' :
+           s==='rejected'  ? 'Rejected' : s;
+  }
+  function carTypeLabel(v){
+    if (v==='small' || v==='صالون') return 'small';
+    if (v==='4x4'  || v==='فورويل') return '4x4';
+    return v || '—';
+  }
+  function fmt12(input){
+    if (!input) return '—';
+    const t = (typeof input === 'number') ? input :
+              (typeof input === 'string' ? Date.parse(input) : 0);
+    if (!t) return '—';
+    const d = new Date(t);
+    return d.toLocaleString('en-US', {
+      year:'numeric', month:'short', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', hour12:true
+    });
+  }
+  function openDirections(lat, lng){
+    const la = parseFloat(lat), ln = parseFloat(lng);
+    if (!Number.isFinite(la) || !Number.isFinite(ln)){
+      alert('Location is missing for this booking.');
+      return;
+    }
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${la},${ln}`;
+    window.open(url, '_blank');
+  }
+
+  function render(items){
+    list.innerHTML = '';
+    if (!items.length){
+      list.innerHTML = '<div class="empty">No (pending/accepted/paid) bookings.</div>';
+      return;
+    }
+    items.forEach((x, idx)=>{
+      const el = document.createElement('div');
+      el.className = 'card';
+      const acceptedOrPaid = (x.status === 'accepted' || x.status === 'confirmed');
+      const plate = `${(x.carCode||'').toString().toUpperCase()} ${x.carNumber||''}`.trim();
+      const position = idx + 1;
+
+      el.innerHTML = `
+        <div class="queue-col">
+          <div class="queue-badge">${position}</div>
+          <div class="queue-time">${fmt12(x.createdAtMs || x.createdAt)}</div>
+        </div>
+
+        <div class="row" style="justify-content:flex-start;">
+          <div class="pill">Status: ${statusLabel(x.status)}</div>
+        </div>
+
+        <div class="section-title">Customer</div>
+        <div class="row">
+          <div><b>Phone:</b> <span class="value">${x.phone || '—'}</span></div>
+          <div><b>Car Type:</b> <span class="value">${carTypeLabel(x.carType)}</span></div>
+          <div><b>Wash:</b> <span class="value">${washLabel(x.package)}</span></div>
+          <div><b>Price:</b> <span class="value">${money(x.price)}</span></div>
+        </div>
+
+        <div class="section-title">Vehicle</div>
+        <div class="row">
+          <div><b>Plate:</b> <span class="value">${plate || '—'}</span></div>
+        </div>
+
+        <div class="section-title">Location</div>
+        <div class="row" style="justify-content:flex-end">
+          <button class="ghost" onclick="openDirections('${x.lat}','${x.lng}')">📍 location</button>
+        </div>
+
+        <div class="tools">
+          <button class="${acceptedOrPaid?'green':'blue'}"
+                  id="assign-${x.id}"
+                  ${acceptedOrPaid?'disabled':''}
+                  onclick="markAccepted('${x.id}', this)">${acceptedOrPaid?'Accepted/Paid':'Accept'}</button>
+
+          <button class="green" id="done-${x.id}"   onclick="markCompleted('${x.id}', this)">Complete ✔</button>
+          <button class="red"   id="reject-${x.id}" onclick="markRejected('${x.id}', this)">Reject ✖</button>
+        </div>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  // Action buttons
+  async function markAccepted(id, btn){
+    if (btn && btn.classList.contains('green')) return;
+    await db.collection('bookings').doc(id).update({
+      status:'accepted', acceptedAt:new Date().toISOString()
+    });
+    if (btn){
+      btn.classList.remove('blue');
+      btn.classList.add('green');
+      btn.textContent = 'Accepted';
+      btn.disabled = true;
+    }
+  }
+
+  async function markRejected(id, btn){
+    await db.collection('bookings').doc(id).update({
+      status:'rejected', rejectedAt:new Date().toISOString()
+    });
+  }
+
+  async function markCompleted(id, btn){
+    await db.collection('bookings').doc(id).update({
+      status:'completed', completedAt:new Date().toISOString()
+    });
+  }
+</script>
+
+<!-- ================== ساعات العمل — إعدادات الأدمن ================== -->
+<style>
+  .wh-fab{position:fixed;z-index:9999;bottom:18px;left:18px;background:#1f6fff;color:#fff;
+    border:none;border-radius:999px;display:flex;align-items:center;gap:10px;padding:12px 16px;
+    box-shadow:0 10px 30px rgba(31,111,255,.35);cursor:pointer;font-family:'Tajawal',sans-serif}
+  .wh-fab svg{width:20px;height:20px}
+  .wh-modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(2px);display:none;z-index:9998}
+  .wh-modal{position:fixed;inset:0;display:none;place-items:center;z-index:9999}
+  .wh-card{width:min(980px,96vw);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;
+    box-shadow:0 20px 60px rgba(2,6,23,.25);padding:18px 18px 12px;direction:rtl}
+  .wh-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .wh-hdr h3{font:700 20px/1.2 'Tajawal',system-ui;margin:0}
+  .wh-close{background:transparent;border:none;font-size:22px;cursor:pointer}
+  .wh-day{min-width:110px}
+  .wh-row{display:grid;grid-template-columns:140px 1fr 1fr 120px;gap:10px;align-items:center}
+  .wh-period{display:grid;grid-template-columns:90px 120px 30px 120px;align-items:center;gap:8px}
+  .wh-period label{color:#64748b;font-weight:600}
+  .wh-note{font:400 13px/1.6 'Tajawal',system-ui;color:#475569;background:#f8fafc;border:1px dashed #e2e8f0;
+    padding:10px;border-radius:10px;margin:12px 0}
+  .wh-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+  .wh-btn{border:none;border-radius:10px;padding:10px 14px;font:700 14px 'Tajawal',system-ui;cursor:pointer}
+  .wh-btn.primary{background:#1f6fff;color:#fff}
+  .wh-btn.secondary{background:#edf2ff;color:#1e3a8a}
+  .wh-switch{display:inline-flex;align-items:center;gap:6px}
+  .wh-switch input{accent-color:#1f6fff}
+  .wh-inline{display:flex;align-items:center;gap:6px}
+  .wh-muted{color:#6b7280}
+  .wh-badge{display:inline-block;background:#eef2ff;color:#1e3a8a;border-radius:999px;padding:3px 10px;font:700 12px 'Tajawal'}
+  .wh-mini{font:600 12px 'Tajawal';color:#64748b}
+  .wh-grid{display:grid;grid-template-columns:repeat(1, minmax(0,1fr));gap:10px}
+  @media(min-width:860px){.wh-grid{grid-template-columns:repeat(1,minmax(0,1fr));}}
+</style>
+
+<button type="button" class="wh-fab" id="whOpenFab" title="أوقات العمل">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+  <span>أوقات العمل</span>
+</button>
+
+<div class="wh-modal-backdrop" id="whBackdrop"></div>
+<div class="wh-modal" id="whModal" role="dialog" aria-modal="true" aria-labelledby="whTitle">
+  <div class="wh-card">
+    <div class="wh-hdr">
+      <h3 id="whTitle">إعداد أوقات العمل <span class="wh-badge">فترتان يوميًا (الثانية اختيارية)</span></h3>
+      <button class="wh-close" id="whCloseBtn" aria-label="إغلاق">×</button>
     </div>
-    <button class="modal-close" onclick="toggleReport(false)">×</button>
-  </div>
-
-  <div style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0;">
-    <div>
-      <div class="muted" style="margin-bottom:4px;">تقرير يومي</div>
-      <input type="date" id="rptDay"
-             style="padding:6px 8px;border-radius:10px;border:1px solid var(--line);min-width:150px;">
-      <button class="btn blue" style="margin-top:4px;" onclick="loadDailyReport()">عرض اليوم</button>
+    <div class="wh-note">
+      حدد أوقات العمل لكل يوم. إذا كان المكان مغلقًا في يوم معين، فعّل خيار <b>مغلق</b>. 
+      للفترة الثانية اختر <span class="wh-mini">تفعيل الفترة الثانية</span> ثم أدخل الأوقات.
     </div>
-    <div>
-      <div class="muted" style="margin-bottom:4px;">تقرير شهري</div>
-      <input type="month" id="rptMonth"
-             style="padding:6px 8px;border-radius:10px;border:1px solid var(--line);min-width:150px;">
-      <button class="btn blue" style="margin-top:4px;" onclick="loadMonthlyReport()">عرض الشهر</button>
+    <div id="whDaysContainer" class="wh-grid"></div>
+    <div class="wh-actions">
+      <button class="wh-btn secondary" id="whReset">استعادة الافتراضي</button>
+      <button class="wh-btn primary" id="whSave">حفظ</button>
     </div>
-  </div>
-
-  <div style="overflow-x:auto;">
-    <table id="rptTable">
-      <thead>
-      <tr>
-        <th>وقت الإكمال</th>
-        <th>نوع الغسيل</th>
-        <th>السعر (OMR)</th>
-        <th>المدة (دقيقة)</th>
-        <th>المسافة من نقطة استلام الطلب (كم)</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr><td colspan="5" style="color:var(--muted);">اختر يومًا أو شهرًا ثم اضغط عرض.</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div id="rptSummary" class="muted" style="margin-top:4px;"></div>
-</div>
-
-<!-- شريط الأزرار -->
-<div class="fab-bar">
-  <button class="fab-btn fab-work" onclick="toggleWorkHours(true)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <circle cx="12" cy="12" r="9"></circle>
-      <path d="M12 7v5l3 2"></path>
-    </svg>
-    أوقات العمل
-  </button>
-
-  <button class="fab-btn fab-report" onclick="toggleReport()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path d="M4 19V9"></path>
-      <path d="M10 19V5"></path>
-      <path d="M16 19V12"></path>
-      <path d="M3 19h18"></path>
-    </svg>
-    التقرير
-  </button>
-</div>
-
-<!-- نافذة أوقات العمل: ضع نموذجك الفعلي هنا -->
-<div class="wh-backdrop" id="whBackdrop" onclick="toggleWorkHours(false)"></div>
-<div class="wh-modal" id="whModal">
-  <div class="modal-head">
-    <div>
-      <h3>إعداد أوقات العمل</h3>
-      <small>ضع هنا نفس حقول أوقات العمل التي كنت تستخدمها.</small>
-    </div>
-    <button class="modal-close" onclick="toggleWorkHours(false)">×</button>
   </div>
 </div>
 
 <script>
-  // Firebase init
-  var db = null;
-  (function initFirebase(){
-    const firebaseConfig = {
-      apiKey: "AIzaSyC_kRUAmKIFQwWK0Xrr8PeebnQbWGauu34",
-      authDomain: "wash-a7ef9.firebaseapp.com",
-      projectId: "wash-a7ef9",
-      storageBucket: "wash-a7ef9.firebasestorage.app",
-      messagingSenderId: "244309029995",
-      appId: "1:244309029995:web:b5cb0534edce26aac3ed2e"
-    };
-    if (!firebase.apps.length){
-      firebase.initializeApp(firebaseConfig);
-    }
-    db = firebase.firestore();
-  })();
+(function(){
+  const DAYS_AR = ["السبت","الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة"];
+  const STORAGE_KEY = "businessHoursV1";
 
-  // ========== Helpers ==========
-  function washLabel(p){
-    if (!p) return 'غير محدد';
-    const v = (''+p).toLowerCase();
-    if (v.includes('full')) return 'غسيل كامل';
-    if (v.includes('inside')) return 'غسيل داخلي';
-    if (v.includes('outside')) return 'غسيل خارجي';
-    return p;
-  }
-  function fmtTime(d){
-    const dt = (d instanceof Date)? d : new Date(d);
-    if (isNaN(dt.getTime())) return '—';
-    return dt.toLocaleString('ar-EG',{hour:'2-digit',minute:'2-digit',hour12:true});
-  }
-  function getCompletedDate(b){
-    if (b.completedAt && typeof b.completedAt.toDate === 'function'){
-      try{
-        const d = b.completedAt.toDate();
-        if (!isNaN(d.getTime())) return d;
-      }catch(e){}
-    }
-    if (typeof b.completedAtMs === 'number'){
-      const d = new Date(b.completedAtMs);
-      if (!isNaN(d.getTime())) return d;
-    }
-    if (typeof b.completedAt === 'string'){
-      const t = Date.parse(b.completedAt);
-      if (!isNaN(t)) return new Date(t);
-    }
-    return null;
-  }
-  function getCreatedDate(b){
-    if (b.createdAt && typeof b.createdAt.toDate === 'function'){
-      try{
-        const d = b.createdAt.toDate();
-        if (!isNaN(d.getTime())) return d;
-      }catch(e){}
-    }
-    if (typeof b.createdAt === 'number'){
-      const d = new Date(b.createdAt);
-      if (!isNaN(d.getTime())) return d;
-    }
-    if (typeof b.createdAt === 'string'){
-      const t = Date.parse(b.createdAt);
-      if (!isNaN(t)) return new Date(t);
-    }
-    return new Date(0);
-  }
-  function ymdLocal(d){
-    const off = d.getTimezoneOffset()*60000;
-    const local = new Date(d.getTime() - off);
-    return local.toISOString().slice(0,10);
-  }
-  function ymLocal(d){
-    const off = d.getTimezoneOffset()*60000;
-    const local = new Date(d.getTime() - off);
-    return local.toISOString().slice(0,7);
-  }
-  function haversineKm(lat1,lon1,lat2,lon2){
-    const R = 6371;
-    const toRad = x => x*Math.PI/180;
-    const dLat = toRad(lat2-lat1);
-    const dLon = toRad(lon2-lon1);
-    const a =
-      Math.sin(dLat/2)**2 +
-      Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
-    const c = 2*Math.atan2(Math.sqrt(1-a),Math.sqrt(a));
-    return R*c;
-  }
-  function computeDistanceFromPickup(b){
-    const sLat = parseFloat(b.pickupLat);
-    const sLng = parseFloat(b.pickupLng);
-    const cLat = parseFloat(b.lat);
-    const cLng = parseFloat(b.lng);
-    if (!Number.isFinite(sLat) || !Number.isFinite(sLng)) return null;
-    if (!Number.isFinite(cLat) || !Number.isFinite(cLng)) return null;
-    return haversineKm(sLat,sLng,cLat,cLng);
-  }
-  function computeDurationMinutes(b){
-    const start = (typeof b.createdAtMs === 'number')
-      ? b.createdAtMs
-      : (b.createdAt ? Date.parse(b.createdAt) : null);
-    const endDate = getCompletedDate(b);
-    if (!start || !endDate) return null;
-    const diff = endDate.getTime() - start;
-    if (diff <= 0) return null;
-    return diff / 60000;
-  }
+  const defaultHours = [
+    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
+    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
+    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
+    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
+    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
+    {closed:false, p1:{from:"08:00", to:"12:00"}, p2:{enabled:false, from:"", to:""}},
+    {closed:true,  p1:{from:"", to:""},            p2:{enabled:false, from:"", to:""}}
+  ];
 
-  // ========== تحميل الطلبات بدون orderBy ==========
-  async function loadBookings(){
-    const list = document.getElementById('list');
-    list.innerHTML = '<div class="item muted">Loading bookings...</div>';
-    if (!db){
-      list.innerHTML = '<div class="item" style="color:#b91c1c;">Firebase غير مهيأ.</div>';
-      return;
-    }
+  function loadHours(){
     try{
-      const snap = await db.collection('bookings')
-        .where('status','in',['pending','accepted','paid'])
-        .limit(200)
-        .get();
-
-      const rows = [];
-      snap.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
-
-      rows.sort((a,b)=> getCreatedDate(b) - getCreatedDate(a));
-
-      if (!rows.length){
-        list.innerHTML = '<div class="item muted">No (pending/accepted/paid) bookings.</div>';
-        return;
-      }
-
-      list.innerHTML = '';
-      rows.forEach(b=>{
-        const when = b.createdAt ? fmtTime(getCreatedDate(b)) : '—';
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML =
-          '<div class="item-header">'+
-            '<div><strong>'+(b.name||"عميل")+'</strong>'+
-            '<div class="muted">'+(b.phone||'')+'</div></div>'+
-            '<div class="badge">'+(b.status||'')+'</div>'+
-          '</div>'+
-          '<div class="muted">الوقت: '+when+' — نوع الغسيل: '+washLabel(b.package)+'</div>';
-        list.appendChild(div);
-      });
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw){ return JSON.parse(JSON.stringify(defaultHours)); }
+      const parsed = JSON.parse(raw);
+      if(!Array.isArray(parsed) || parsed.length!==7) return JSON.parse(JSON.stringify(defaultHours));
+      return parsed;
     }catch(e){
-      list.innerHTML =
-        '<div class="item" style="color:#b91c1c;">خطأ في تحميل الطلبات: '+e.message+'</div>';
+      return JSON.parse(JSON.stringify(defaultHours));
     }
   }
 
-  // ========== نوافذ أوقات العمل / التقرير مع رقم سري ==========
-  let rptUnlocked = false; // لا يتم طلبه مرة أخرى بعد نجاحه
-
-  function toggleWorkHours(show){
-    const b = document.getElementById('whBackdrop');
-    const m = document.getElementById('whModal');
-    const s = (typeof show === 'boolean') ? show : (m.style.display !== 'block');
-    b.style.display = s ? 'block' : 'none';
-    m.style.display = s ? 'block' : 'none';
-  }
-
-  function toggleReport(show){
-    const b = document.getElementById('rptBackdrop');
-    const m = document.getElementById('rptModal');
-    const isOpen = (m.style.display === 'block');
-    const target = (typeof show === 'boolean') ? show : !isOpen;
-
-    // عند الفتح فقط نتحقق من الرقم السري
-    if (target && !isOpen && !rptUnlocked){
-      const code = prompt('أدخل الرقم السري لفتح التقارير:');
-      if (code !== '9133'){
-        alert('رقم سري غير صحيح');
-        return;
-      }
-      rptUnlocked = true;
-    }
-
-    b.style.display = target ? 'block' : 'none';
-    m.style.display = target ? 'block' : 'none';
-
-    if (target){
-      const dayInput = document.getElementById('rptDay');
-      if (!dayInput.value){
-        dayInput.value = new Date().toISOString().slice(0,10);
-      }
-      loadDailyReport();
-    }
-  }
-
-  // ========== التقارير ==========
-  async function loadDailyReport(){
-    const input = document.getElementById('rptDay');
-    const tbody = document.querySelector('#rptTable tbody');
-    const summary = document.getElementById('rptSummary');
-    const day = input.value || new Date().toISOString().slice(0,10);
-    input.value = day;
-
-    tbody.innerHTML =
-      '<tr><td colspan="5" style="color:var(--muted);">جاري تحميل تقرير اليوم...</td></tr>';
-    summary.textContent = '';
-
-    if (!db){
-      tbody.innerHTML =
-        '<tr><td colspan="5" style="color:#b91c1c;">Firebase غير مهيأ.</td></tr>';
-      return;
-    }
-
+  function saveHours(hours){
     try{
-      const snap = await db.collection('bookings')
-        .where('status','==','completed')
-        .get();
-
-      const all = [];
-      snap.forEach(d => all.push({ id:d.id, ...d.data() }));
-
-      const filtered = all.filter(b=>{
-        if (b.completedDay === day) return true;
-        const dt = getCompletedDate(b);
-        return dt ? (ymdLocal(dt) === day) : false;
-      });
-
-      renderReport(filtered, 'تقرير يوم '+day);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(hours));
+      return true;
     }catch(e){
-      tbody.innerHTML =
-        '<tr><td colspan="5" style="color:#b91c1c;">تعذر تحميل تقرير اليوم: '+e.message+'</td></tr>';
+      alert("تعذر الحفظ في هذا المتصفح. تحقق من صلاحيات التخزين.");
+      return false;
     }
   }
 
-  async function loadMonthlyReport(){
-    const input = document.getElementById('rptMonth');
-    const tbody = document.querySelector('#rptTable tbody');
-    const summary = document.getElementById('rptSummary');
-    const ymVal = input.value || new Date().toISOString().slice(0,7);
-    input.value = ymVal;
-
-    tbody.innerHTML =
-      '<tr><td colspan="5" style="color:var(--muted);">جاري تحميل تقرير الشهر...</td></tr>';
-    summary.textContent = '';
-
-    if (!db){
-      tbody.innerHTML =
-        '<tr><td colspan="5" style="color:#b91c1c;">Firebase غير مهيأ.</td></tr>';
-      return;
-    }
-
-    try{
-      const snap = await db.collection('bookings')
-        .where('status','==','completed')
-        .get();
-
-      const all = [];
-      snap.forEach(d => all.push({ id:d.id, ...d.data() }));
-
-      const filtered = all.filter(b=>{
-        if (b.completedMonth === ymVal) return true;
-        const dt = getCompletedDate(b);
-        return dt ? (ymLocal(dt) === ymVal) : false;
-      });
-
-      renderReport(filtered, 'تقرير شهر '+ymVal);
-    }catch(e){
-      tbody.innerHTML =
-        '<tr><td colspan="5" style="color:#b91c1c;">تعذر تحميل تقرير الشهر: '+e.message+'</td></tr>';
-    }
+  function rowTemplate(dayIdx){
+    return `
+      <div class="wh-row" data-day="${dayIdx}">
+        <div class="wh-day">
+          <div class="wh-inline"><strong>${DAYS_AR[dayIdx]}</strong></div>
+          <label class="wh-switch wh-muted">
+            <input type="checkbox" class="wh-closed"> مغلق
+          </label>
+        </div>
+        <div class="wh-period">
+          <label>الفترة ١</label>
+          <input type="time" class="wh-p1-from" required>
+          <span>–</span>
+          <input type="time" class="wh-p1-to" required>
+        </div>
+        <div class="wh-period">
+          <label class="wh-inline">
+            <input type="checkbox" class="wh-p2-enabled"> تفعيل ٢
+          </label>
+          <input type="time" class="wh-p2-from">
+          <span>–</span>
+          <input type="time" class="wh-p2-to">
+        </div>
+        <div style="text-align:end"><span class="wh-mini wh-muted">التوقيت 24 ساعة</span></div>
+      </div>
+    `;
   }
 
-  function renderReport(items, label){
-    const tbody = document.querySelector('#rptTable tbody');
-    const summary = document.getElementById('rptSummary');
-    tbody.innerHTML = '';
-
-    if (!items.length){
-      tbody.innerHTML =
-        '<tr><td colspan="5" style="color:var(--muted);">لا توجد طلبات مكتملة لـ '+label+'.</td></tr>';
-      summary.textContent = '';
-      return;
-    }
-
-    let totalPrice = 0;
-    let totalDuration = 0, cDur = 0;
-    let totalDist = 0, cDist = 0;
-
-    items.forEach(b=>{
-      const dt = getCompletedDate(b);
-      const duration = computeDurationMinutes(b);
-      const dist = computeDistanceFromPickup(b);
-      const price = Number(b.price || 0);
-
-      totalPrice += price;
-      if (duration != null){ totalDuration += duration; cDur++; }
-      if (dist != null){ totalDist += dist; cDist++; }
-
-      const tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td>'+(dt?fmtTime(dt):'—')+'</td>'+
-        '<td>'+washLabel(b.package)+'</td>'+
-        '<td>'+price.toFixed(3)+'</td>'+
-        '<td>'+(duration!=null?duration.toFixed(1):'—')+'</td>'+
-        '<td>'+(dist!=null?dist.toFixed(2):'—')+'</td>';
-      tbody.appendChild(tr);
+  function render(container, hours){
+    container.innerHTML = Array.from({length:7}, (_,i)=>rowTemplate(i)).join("");
+    Array.from(container.querySelectorAll(".wh-row")).forEach((row, idx)=>{
+      const h = hours[idx];
+      row.querySelector(".wh-closed").checked = !!h.closed;
+      row.querySelector(".wh-p1-from").value = h.p1.from || "";
+      row.querySelector(".wh-p1-to").value   = h.p1.to   || "";
+      row.querySelector(".wh-p2-enabled").checked = !!h.p2.enabled;
+      row.querySelector(".wh-p2-from").value = h.p2.from || "";
+      row.querySelector(".wh-p2-to").value   = h.p2.to   || "";
+      applyRowState(row);
+      row.querySelector(".wh-closed").addEventListener("change", ()=>applyRowState(row));
+      row.querySelector(".wh-p2-enabled").addEventListener("change", ()=>applyRowState(row));
     });
-
-    const avgDur = cDur ? (totalDuration / cDur) : 0;
-    const avgDist = cDist ? (totalDist / cDist) : 0;
-
-    summary.innerHTML =
-      label+
-      ' — عدد الطلبات: '+items.length+
-      ' | إجمالي المبالغ: '+totalPrice.toFixed(3)+' OMR'+
-      ' | متوسط المدة: '+avgDur.toFixed(1)+' دقيقة'+
-      ' | إجمالي المسافة: '+totalDist.toFixed(2)+' كم'+
-      ' | متوسط المسافة: '+avgDist.toFixed(2)+' كم';
   }
 
-  loadBookings();
+  function applyRowState(row){
+    const isClosed = row.querySelector(".wh-closed").checked;
+    const p2Enabled = row.querySelector(".wh-p2-enabled").checked;
+    [".wh-p1-from",".wh-p1-to"].forEach(sel=>{
+      const el=row.querySelector(sel);
+      el.disabled = isClosed;
+      el.required = !isClosed;
+      el.style.opacity = isClosed? .5:1;
+    });
+    [".wh-p2-from",".wh-p2-to"].forEach(sel=>{
+      const el=row.querySelector(sel);
+      el.disabled = isClosed || !p2Enabled;
+      el.required = false;
+      el.style.opacity = (isClosed||!p2Enabled)? .5:1;
+    });
+  }
+
+  function collect(container){
+    const hours = new Array(7).fill(0).map(()=>({}));
+    let ok = true;
+    Array.from(container.querySelectorAll(".wh-row")).forEach(row=>{
+      const idx = Number(row.getAttribute("data-day"));
+      const closed = row.querySelector(".wh-closed").checked;
+      const p1from = row.querySelector(".wh-p1-from").value;
+      const p1to   = row.querySelector(".wh-p1-to").value;
+      const p2en   = row.querySelector(".wh-p2-enabled").checked;
+      const p2from = row.querySelector(".wh-p2-from").value;
+      const p2to   = row.querySelector(".wh-p2-to").value;
+
+      if(!closed){
+        if(!(p1from && p1to)){
+          alert("يجب إدخال الفترة الأولى لليوم: " + (DAYS_AR[idx]));
+          ok=false; return;
+        }
+        if(p1to <= p1from){
+          alert("نهاية الفترة الأولى يجب أن تكون بعد بدايتها (" + DAYS_AR[idx] + ")");
+          ok=false; return;
+        }
+        if(p2en){
+          if(!(p2from && p2to)){
+            alert("أكمل زمن الفترة الثانية لليوم: " + (DAYS_AR[idx]));
+            ok=false; return;
+          }
+          if(p2to <= p2from){
+            alert("نهاية الفترة الثانية يجب أن تكون بعد بدايتها (" + DAYS_AR[idx] + ")");
+            ok=false; return;
+          }
+        }
+      }
+
+      hours[idx] = {
+        closed,
+        p1:{from:p1from||"", to:p1to||""},
+        p2:{enabled:p2en, from:p2from||"", to:p2to||""}
+      };
+    });
+    return ok ? hours : null;
+  }
+
+  const whBackdrop = document.getElementById("whBackdrop");
+  const whModal = document.getElementById("whModal");
+  const whClose = document.getElementById("whCloseBtn");
+  const whOpenFab = document.getElementById("whOpenFab");
+  const whReset = document.getElementById("whReset");
+  const whSave = document.getElementById("whSave");
+  const whDays = document.getElementById("whDaysContainer");
+
+  function openModal(){
+    render(whDays, loadHours());
+    whBackdrop.style.display = "block";
+    whModal.style.display = "grid";
+  }
+  function closeModal(){
+    whBackdrop.style.display = "none";
+    whModal.style.display = "none";
+  }
+
+  whOpenFab.addEventListener("click", openModal);
+  whClose.addEventListener("click", closeModal);
+  whBackdrop.addEventListener("click", closeModal);
+  whReset.addEventListener("click", ()=>render(whDays, JSON.parse(JSON.stringify(defaultHours))));
+  whSave.addEventListener("click", ()=>{
+    const data = collect(whDays);
+    if(!data) return;
+    if(saveHours(data)){
+      closeModal();
+      alert("تم حفظ أوقات العمل بنجاح.");
+      // dispatch removed to avoid unintended push on pull
+}
+  });
+
+  // expose helper
+  window.__getBusinessHours = ()=>loadHours();
+})();
 </script>
+
+<!-- ===== Firestore sync + Cloud-Only (ADMIN, compat) ===== -->
+<script>
+(function(){
+  const STORAGE_KEY = "businessHoursV1";
+  // 0) Ensure Firebase available
+  if(!(window.firebase && firebase.firestore)){ console.warn("[admin-hours] Firebase not found"); return; }
+  window.db = window.db || firebase.firestore();
+  const HOURS_DOC = db.collection('config').doc('businessHours');
+  const SV = firebase.firestore.FieldValue;
+
+  // 1) Anonymous sign-in (for write rules)
+  if(firebase.auth){ firebase.auth().signInAnonymously().catch(console.warn); }
+
+  // 2) Cloud-only mode: clear stale local first; set only after successful cloud read/write
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(_){}
+  window.__bh_cloud_ready = false;
+window.__bh_save_intent = false;
+
+  // 3) Seed from cloud on load
+  async function pullFromCloud(){
+    try{
+      const snap = await HOURS_DOC.get();
+      const d = snap.exists && snap.data();
+      if(d && Array.isArray(d.hours) && d.hours.length===7){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(d.hours));
+        window.__bh_cloud_ready = true;
+        // dispatch removed to avoid unintended push on pull
+console.log("[admin-hours] pulled from cloud");
+      }else{
+        console.log("[admin-hours] cloud doc missing/malformed");
+      }
+    }catch(e){ console.warn("[admin-hours] pull error:", e); }
+  }
+
+  // 4) Push to cloud when widget saves
+  
+window.__bh_save_intent = !!window.__bh_save_intent;
+window.addEventListener("business-hours-updated", async (ev)=>{
+  if (!window.__bh_save_intent) { console.log("[admin-hours] skip push (no explicit save)"); return; }
+  try{
+    const hours = ev && ev.detail;
+    if(!(Array.isArray(hours) && hours.length===7)) return;
+    await (window.ensureAuth ? ensureAuth() : Promise.resolve());
+    await HOURS_DOC.set({ hours, updatedAt: SV.serverTimestamp() }, { merge: true });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(hours));
+    window.__bh_cloud_ready = true;
+    console.log("[admin-hours] pushed to cloud");
+  }catch(e){
+    console.warn("[admin-hours] push error:", e);
+    if(window.__bh_save_intent) alert("تعذر الحفظ على السحابة.");
+  }finally{
+    window.__bh_save_intent = false;
+  }
+});localStorage.setItem(STORAGE_KEY, JSON.stringify(hours));
+    window.__bh_cloud_ready = true;
+    console.log("[admin-hours] pushed to cloud");
+  }catch(e){
+    console.warn("[admin-hours] push error:", e);
+    if(window.__bh_save_intent) alert("تعذر الحفظ على السحابة.");
+  }finally{
+    window.__bh_save_intent = false;
+  }
+});
+// after push, re-seed local from the same value to keep UI in sync
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(hours));
+      window.__bh_cloud_ready = true;
+      console.log("[admin-hours] pushed to cloud");
+    }catch(e){ console.warn("[admin-hours] push error:", e); if(window.__bh_save_intent) alert("تعذر الحفظ على السحابة."); }
+  });
+
+  // 5) Fallback: if Save button exists, block save if not signed in
+  const saveBtn = document.getElementById("whSave");
+  if(saveBtn){
+    saveBtn.addEventListener("click", (ev)=>{
+      const user = firebase.auth && firebase.auth().currentUser;
+      if(!user){
+        ev.preventDefault();
+        alert("لا يمكن الحفظ: لم يتم تسجيل الدخول (مجهول).");
+      }
+    }, true);
+  }
+
+  // 6) Live updates
+  try{
+    HOURS_DOC.onSnapshot((snap)=>{
+      const d = snap.data && snap.data();
+      if(snap.exists && d && Array.isArray(d.hours) && d.hours.length===7){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(d.hours));
+        window.__bh_cloud_ready = true;
+        console.log("[admin-hours] live update");
+      }
+    });
+  }catch(e){ console.warn("[admin-hours] live sub failed:", e); }
+
+  pullFromCloud();
+})();
+</script>
+
 </body>
 </html>
