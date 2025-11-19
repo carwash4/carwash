@@ -350,33 +350,6 @@ try{
     }
   }
 
-<script>
-(function(){
-  const DAYS_AR = ["السبت","الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة"];
-  const STORAGE_KEY = "businessHoursV1";
-
-  const defaultHours = [
-    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
-    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
-    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
-    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
-    {closed:false, p1:{from:"08:00", to:"13:00"}, p2:{enabled:true, from:"16:00", to:"20:00"}},
-    {closed:false, p1:{from:"08:00", to:"12:00"}, p2:{enabled:false, from:"", to:""}},
-    {closed:true,  p1:{from:"", to:""},            p2:{enabled:false, from:"", to:""}}
-  ];
-
-  function loadHours(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw){ return JSON.parse(JSON.stringify(defaultHours)); }
-      const parsed = JSON.parse(raw);
-      if(!Array.isArray(parsed) || parsed.length!==7) return JSON.parse(JSON.stringify(defaultHours));
-      return parsed;
-    }catch(e){
-      return JSON.parse(JSON.stringify(defaultHours));
-    }
-  }
-
   // النسخة الجديدة: تكتب في Firestore مباشرة
   async function saveHours(hours){
     try{
